@@ -1,5 +1,5 @@
 name: thunderbird
-version: 60.7.0
+version: 68.2.0
 summary: Mozilla Thunderbird email application
 description: Thunderbird is a free email application that’s easy to set up and customize - and it’s loaded with great features!
 confinement: strict
@@ -15,13 +15,11 @@ apps:
     plugs:
       - avahi-observe
       - browser-sandbox
-      - camera
       - cups-control
       - desktop
       - desktop-legacy
       - gsettings
       - gpg-keys
-      - home
       - network
       - network-control
       - opengl
@@ -29,6 +27,8 @@ apps:
       - removable-media
       - unity7
       - x11
+      - camera
+      - home
 
 plugs:
   gnome-3-28-1804:
@@ -65,7 +65,7 @@ parts:
       mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
   thunderbird:
     plugin: dump
-    source: https://archive.mozilla.org/pub/thunderbird/releases/60.7.0/linux-x86_64/en-GB/thunderbird-60.7.0.tar.bz2
+    source: https://archive.mozilla.org/pub/thunderbird/releases/68.2.0/linux-x86_64/en-GB/thunderbird-68.2.0.tar.bz2
     stage-packages:
       - libxt6
       - libdbus-glib-1-2
