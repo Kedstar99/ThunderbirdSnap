@@ -1,0 +1,35 @@
+#!/bin/bash -e
+
+realhome=$(getent passwd "$UID" | cut -d ':' -f 6)
+host_gpg="$realhome/.gnupg"
+
+cd "$SNAP_USER_DATA/../current"
+snap_current="$(pwd)"
+export GNUPGHOME="$snap_current/.gnupg"
+
+if [ ! -d "$GNUPGHOME" ]; then
+  mkdir -m 0700 "$GNUPGHOME"
+fi
+
+# import gpg keys from host
+if [ -d "$host_gpg" ]; then
+  rsync -r --delete --exclude "S.*" --exclude "*.conf" "$host_gpg/" "$GNUPGHOME" 
+fi
+
+gpg_agent_conf="$GNUPGHOME/gpg-agent.conf"
+if [ ! -f "$gpg_agent_conf" ]; then
+  cat > "$gpg_agent_conf" <<EOM
+homedir $GNUPGHOME
+EOM
+fi
+
+gpg_conf="$GNUPGHOME/gpg.conf"
+if [ ! -f "$gpg_conf" ]; then
+  cat > "$GNUPGHOME/gpg.conf" <<EOM
+homedir $GNUPGHOME
+EOM
+fi
+
+export -p > $HOME/.gpg-env
+
+exec "${@}"

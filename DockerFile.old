@@ -1,9 +1,0 @@
-FROM ubuntu:18.04
-LABEL maintainer="Krish <K.DeSouza@Outlook.com>"
-WORKDIR /thunderbird
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties &&\
-    add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26 &&\
-    apt-get update && apt-get install -y snapcraft
-COPY . /thunderbird
-RUN snapcraft
-ENTRYPOINT ["sh", "./entry_point.sh"]

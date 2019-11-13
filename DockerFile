@@ -1,8 +1,0 @@
-FROM ubuntu:18.04
-LABEL maintainer="Krish <K.DeSouza@Outlook.com>"
-WORKDIR /thunderbird
-RUN apt-get update && apt-get install -y snapcraft
-COPY . /thunderbird
-RUN apt-get update && apt-get upgrade -y && snapcraft && \
-    mv /thunderbird/*.snap /thunderbird/thunderbird.snap
-ENTRYPOINT ["sh", "./entry_point.sh"]
