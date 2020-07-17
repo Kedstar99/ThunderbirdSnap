@@ -1,54 +1,71 @@
 name: thunderbird
-version: 68.2.2
+version: "78.0.0"
 summary: Mozilla Thunderbird email application
 description: Thunderbird is a free email application that’s easy to set up and customize - and it’s loaded with great features!
 confinement: strict
 grade: stable
 base: core18
 
-
 apps:
   thunderbird:
-    command: thunderbird
-    command-chain:
-      - set-up-gnupg
-    extensions: [gnome-3-28]
+    command: bin/desktop-launch $SNAP/bin/gpg-shim $SNAP/thunderbird-bin
     environment:
       DISABLE_WAYLAND: 1
       HOME: "$SNAP_USER_COMMON"
-    common-id: com.thunderbird
-    slots:
-      - dbus-daemon
     plugs:
       - avahi-observe
-      - browser-support
+      - browser-sandbox
+      - camera
       - cups-control
+      - desktop
+      - desktop-legacy
       - gsettings
       - gpg-keys
+      - home
       - network
       - network-control
       - opengl
       - pulseaudio
       - removable-media
-      - home
+      - unity7
+      - x11
+
+plugs:
+  gnome-3-28-1804:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-3-28-1804
+  browser-sandbox:
+    interface: browser-support
+    allow-sandbox: true
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
 
 parts:
-  gnupg:
-    plugin: dump
-    source: gnupg
-    stage-packages: 
-      - gpg
-      - gpg-agent
-      - gpgconf
-      - pinentry-curses
-      - pinentry-gnome3
-      - rsync
-      - gcr
-      - libgcr-ui-3-1
-
+  desktop-gnome-platform:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: gtk
+    plugin: make
+    make-parameters: ["FLAVOR=gtk3"]
+    build-packages:
+      - build-essential
+      - libgtk-3-dev
+    override-build: |
+      snapcraftctl build
+      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
   thunderbird:
     plugin: dump
-    source: https://archive.mozilla.org/pub/thunderbird/releases/68.2.2/linux-x86_64/en-GB/thunderbird-68.2.2.tar.bz2
+    source: https://archive.mozilla.org/pub/thunderbird/releases/78.0/linux-x86_64/en-GB/thunderbird-78.0.tar.bz2
     stage-packages:
       - libxt6
       - libdbus-glib-1-2
@@ -58,8 +75,8 @@ parts:
       - libgl1-mesa-glx
       - libmirclient9
       - desktop-file-utils
-      - libassuan0
-      - libnpth0
+      - gnupg #Needed for engimail extension
+      - gnupg-agent #Needed for engimail extension
       - libblkid1
       - libgcc1
       - libgcrypt20
@@ -76,10 +93,15 @@ parts:
       - libstdc++6
       - libtinfo5
       - libncursesw5
-      - libgtk2.0-0
     organize:
       "snap/thunderbird/current/usr/*": usr/lib/thunderbird
-      
+    after: [desktop-gnome-platform]
+    override-build: |
+      snapcraftctl build
+      set -eux
+      cp -p $SNAPCRAFT_PROJECT_DIR/policies.json $SNAPCRAFT_PART_INSTALL/distribution
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin/
+      cp -p $SNAPCRAFT_PROJECT_DIR/gpg-shim $SNAPCRAFT_PART_INSTALL/bin/
   magic:
     after: [thunderbird]
     plugin: nil
@@ -90,29 +112,3 @@ parts:
       set -eux
       mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share/mime
       update-mime-database $SNAPCRAFT_PART_INSTALL/usr/share/mime
-
-slots:
-  dbus-daemon:
-    interface: dbus
-    bus: session
-    name: com.thunderbird
-      
-layout:
-  /etc/gnupg:
-    bind: $SNAP/etc/gnupg
-  /usr/bin/gpg:
-    bind-file: $SNAP/gpg
-  /usr/bin/gpg-agent:
-    bind-file: $SNAP/usr/bin/gpg-agent
-  /usr/bin/gpg-connect-agent:
-    bind-file: $SNAP/usr/bin/gpg-connect-agent
-  /usr/bin/gpgconf:
-    bind-file: $SNAP/usr/bin/gpgconf
-  /usr/lib/gnupg:
-    bind: $SNAP/usr/lib/gnupg
-  /usr/share/gnupg:
-    bind: $SNAP/usr/share/gnupg
-  /usr/bin/pinentry:
-    bind-file: $SNAP/usr/bin/pinentry-gnome3
-  /usr/lib/gcr:
-    bind: $SNAP/usr/lib/gcr
