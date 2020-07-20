@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if snapctl is-connected gpg-keys; then
-  REALHOME=`getent passwd $UID | cut -d ':' -f 6`
-  export GNUPGHOME=$REALHOME/.gnupg
-fi
-
-exec "$@"
